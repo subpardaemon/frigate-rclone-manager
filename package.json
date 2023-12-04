@@ -17,6 +17,7 @@
   },
   "homepage": "https://github.com/subpardaemon/frigate-rclone-manager#readme",
   "dependencies": {
+    "dotenv": "^16.3.1",
     "mqtt": "^5.3.0"
   }
 }

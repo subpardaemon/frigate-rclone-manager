@@ -1,3 +1,4 @@
+require('dotenv').config();
 const mqtt = require("mqtt");
 const { spawn } = require("node:child_process");
 
@@ -9,24 +10,23 @@ let rcloneBusy = false;
 
 const config = {
     mqtt: {
-        host: "test.mosquitto.org",
-        port: 1883,
-        user: "",
-        pass: "",
+        host: process.env['MQTT_HOST'] || "test.mosquitto.org",
+        port: process.env['MQTT_PORT'] || 1884,
+        user: process.env['MQTT_USER'] || "ro",
+        pass: process.env['MQTT_PASSWORD'] || "readonly",
         topics: ["frigate/events"],
-    },
-    friagate: {
-        events: true
     },
     // seconds
     waitAfterTriggered: 1,
     runInterval: 15,
-    launchAfterUntriggered: 15,
+    launchAfterUntriggered: 20,
     eventTimeout: 600,
     // will be run simultaneously
     rcloneCommands: [
-        'rclone sync /home/pdx/frigate/media/clips OphionFTP:/media/dmu/subpardaemon/frigate/clips --check-first --ignore-checksum',
-        'rclone sync /home/pdx/frigate/media/recordings OphionFTP:/media/dmu/subpardaemon/frigate/recordings --check-first --ignore-checksum'
+        'sleep 2; exit 1',
+        'sleep 5'
+        // 'rclone sync /home/pdx/frigate/media/clips OphionFTP:/media/dmu/subpardaemon/frigate/clips --check-first --ignore-checksum',
+        // 'rclone sync /home/pdx/frigate/media/recordings OphionFTP:/media/dmu/subpardaemon/frigate/recordings --check-first --ignore-checksum'
     ],
 };
 
@@ -39,7 +39,8 @@ const scheduleNextRun = (waitSecs, isLast = false) => {
         clearTimeout(rcloneTimer);
     }
     rcloneTimer = setTimeout(launchRclone, waitSecs * 1000, [isLast]);
-}
+    console.log(`Scheduled next run in ${waitSecs} seconds`);
+};
 
 const launchRcloneCommand = (command) => {
     return new Promise((resolve, reject) => {
@@ -116,8 +117,9 @@ const removeDetection = (id) => {
 
 const onMessage = (topic, message) => {
     try {
+        console.log(`Received message on ${topic}`);
         const data = JSON.parse(message.toString());
-        if (topic === "frigate/events" && config.frigate.events && data.type) {
+        if (topic === "frigate/events" && data.type && data.after) {
             if (data.type === "end") {
                 removeDetection(data.after.id);
             } else {
@@ -155,3 +157,15 @@ const main = () => {
 };
 
 main();
+
+/**
+ * TEST:
+ * mosquitto_pub -h test.mosquitto.org -p 1884 -u rw -P readwrite -t frigate/events -d -l
+ * 
+ * {"type":"new","before":{},"after":{"id":"AAAA-1000"}}
+ * {"type":"new","before":{},"after":{"id":"AAAA-1001"}}
+ * {"type":"update","before":{},"after":{"id":"AAAA-1000"}}
+ * {"type":"update","before":{},"after":{"id":"AAAA-1001"}}
+ * {"type":"end","before":{},"after":{"id":"AAAA-1000"}}
+ * {"type":"end","before":{},"after":{"id":"AAAA-1001"}}
+ */
