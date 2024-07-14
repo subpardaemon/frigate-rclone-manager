@@ -17,17 +17,12 @@ const config = {
         topics: ["frigate/events"],
     },
     // seconds
-    waitAfterTriggered: 1,
-    runInterval: 15,
-    launchAfterUntriggered: 20,
-    eventTimeout: 600,
+    waitAfterTriggered: parseInt(process.env['FRAC_WAIT_AFTER_TRIGGERED']) || 1,
+    runInterval: parseInt(process.env['FRAC_RUN_INTERVAL']) || 15,
+    launchAfterUntriggered: parseInt(process.env['FRAC_LAUNCH_AFTER_UNTRIGGERED']) || 20,
+    eventTimeout: parseInt(process.env['FRAC_EVENT_TIMEOUT']) || 600,
     // will be run simultaneously
-    rcloneCommands: [
-        'sleep 2; exit 1',
-        'sleep 5'
-        // 'rclone sync /home/pdx/frigate/media/clips OphionFTP:/media/dmu/subpardaemon/frigate/clips --check-first --ignore-checksum',
-        // 'rclone sync /home/pdx/frigate/media/recordings OphionFTP:/media/dmu/subpardaemon/frigate/recordings --check-first --ignore-checksum'
-    ],
+    rcloneCommands: process.env['RCLONE_ACTIONS'].split(';;')
 };
 
 const shouldSync = () => {
