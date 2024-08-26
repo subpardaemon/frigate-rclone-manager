@@ -11,9 +11,9 @@ let rcloneBusy = false;
 const config = {
     mqtt: {
         host: process.env['MQTT_HOST'] || "test.mosquitto.org",
-        port: process.env['MQTT_PORT'] || 1884,
+        port: parseInt(process.env['MQTT_PORT']) || 1884,
         user: process.env['MQTT_USER'] || "ro",
-        pass: process.env['MQTT_PASSWORD'] || "readonly",
+        pass: process.env['MQTT_PASS'] || "readonly",
         topics: ["frigate/events"],
     },
     // seconds
@@ -22,7 +22,7 @@ const config = {
     launchAfterUntriggered: parseInt(process.env['FRAC_LAUNCH_AFTER_UNTRIGGERED']) || 20,
     eventTimeout: parseInt(process.env['FRAC_EVENT_TIMEOUT']) || 600,
     // will be run simultaneously
-    rcloneCommands: process.env['RCLONE_ACTIONS'].split(';;')
+    rcloneCommands: process.env['FRAC_RCLONE_ACTIONS'].split(';;')
 };
 
 const shouldSync = () => {
@@ -87,6 +87,7 @@ const cleanupDetections = () => {
 };
 
 const addDetection = (id) => {
+    console.log('Detection with ID', id);
     let alreadyKnown = null;
     for (const detection of detections) {
         if (detection.id === id) {
