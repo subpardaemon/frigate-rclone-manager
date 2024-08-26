@@ -2,7 +2,7 @@
 The missing link between Frigate and your cloud drive of choice
 
 # how to run it
-I suggest using pm2 or something similar. The point is that the script needs to run continously.
+I suggest using pm2 or something similar. The point is that the script needs to run continously. You can do a `pm2 startup` to enable pm2 as a service, then a `pm2 start` in this folder, then a `pm2 save` to save the state of pm2 so it knows what to resurrect on reboot.
 
 # sample .env file
 ```
